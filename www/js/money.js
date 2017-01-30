@@ -27,7 +27,6 @@ function listSMS(config) {
         address: 'MTBANK',
         chartType: 'doughnut'
     }, config);
-    MoneyStatistic.destroyChart();
     if (SMS) {
         SMS.listSMS({
             'maxCount': config.count,
