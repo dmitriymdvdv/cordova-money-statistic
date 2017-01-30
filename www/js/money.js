@@ -25,28 +25,57 @@ function initApp() {
 }
 
 function listSMS() {
-    if (SMS) {
-        SMS.listSMS({
-            'maxCount': 7,
-            'address': 'MTBANK'
-        }, function (data) {
-            if (Array.isArray(data)) {
-                smsList = getParseData(data);
-                var prices = smsList.map(function (item) {
-                    return parseFloat(item.oplata);
-                });
-                var places = smsList.map(function (item) {
-                    return item.place;
-                });
-                var ctx = $("#doughnutChart");
-                MoneyStatistic.createChart({
-                    ctx: ctx,
-                    type: 'doughnut',
-                    data: prices,
-                    labels: places
-                })
+    $.ajax('./sms.txt').then(res => {
+        const data = res.split("\nSpr.:5099999\n\n").map(item => {
+            return item = {
+                address: 'MTBANK',
+                body: item
             }
         });
+        if (Array.isArray(data)) {
+            smsList = getParseData(data);
+            let prices = smsList.map(function (item) {
+                return parseFloat(item.oplata);
+            });
+            let places = smsList.map(function (item) {
+                return item.place;
+            });
+
+            let colors = smsList.map(function (item) {
+                return item.color;
+            });
+            let ctx = $("#doughnutChart");
+            MoneyStatistic.createChart({
+                ctx: ctx,
+                type: 'doughnut',
+                data: prices,
+                labels: places,
+                colors: colors
+            });
+        }
+    });
+    if (SMS) {
+        // SMS.listSMS({
+        //     'maxCount': 7,
+        //     'address': 'MTBANK'
+        // }, function (data) {
+        //     if (Array.isArray(data)) {
+        //         smsList = getParseData(data);
+        //         var prices = smsList.map(function (item) {
+        //             return parseFloat(item.oplata);
+        //         });
+        //         var places = smsList.map(function (item) {
+        //             return item.place;
+        //         });
+        //         var ctx = $("#doughnutChart");
+        //         MoneyStatistic.createChart({
+        //             ctx: ctx,
+        //             type: 'doughnut',
+        //             data: prices,
+        //             labels: places
+        //         });
+        //     }
+        // });
     }
 }
 
@@ -57,14 +86,15 @@ function getParseData(data) {
         var money = getMoney(sms.body);
         smsList.push({
             address: sms.address,
-            body   : sms.body,
-            date   : sms.body.match(/\d\d\/\d\d\/\d\d/),
-            time   : sms.body.match(/\d\d:\d\d/),
-            money  : money,
-            place  : sms.body.replace(/(\r\n|\n|\r)/gm," ").match(/(?:\d+\.\d+\s\S+)([^,]*)/)[1],
-            oplata : parseFloat(money[0]),
+            body: sms.body,
+            date: sms.body.match(/\d\d\/\d\d\/\d\d/),
+            time: sms.body.match(/\d\d:\d\d/),
+            money: money,
+            place: sms.body.replace(/(\r\n|\n|\r)/gm, " ").match(/(?:\d+\.\d+\s\S+)([^,]*)/)[1],
+            oplata: parseFloat(money[0]),
             curancy: money[0].match(/(\d+\.\d+)\s(\S+)/)[2],
-            ostatok: money[1]
+            ostatok: money[1],
+            color: getRandomColor()
         });
     });
 
@@ -78,3 +108,12 @@ function getMoney(body) {
 setTimeout(function () {
     listSMS();
 }, 2000);
+
+function getRandomColor() {
+    let letters = '0123456789ABCDEF'.split('');
+    let color = '#';
+    for (let i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
