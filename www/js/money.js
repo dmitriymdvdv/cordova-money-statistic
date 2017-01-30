@@ -4,8 +4,6 @@ var SMS = SMS || null;
 function onLoad() {
     if (( /(ipad|iphone|ipod|android)/i.test(navigator.userAgent) )) {
         document.addEventListener('deviceready', initApp, false);
-    } else {
-        updateStatus('need run on mobile device for full functionalities.');
     }
 }
 
@@ -18,64 +16,59 @@ function initApp() {
     document.addEventListener('onSMSArrive', function (e) {
         var data = e.data;
         smsList.push(data);
-        updateStatus('SMS arrived, count: ' + smsList.length);
         var divdata = $('div#data');
         divdata.html(divdata.html() + JSON.stringify(data));
     });
 }
 
 function listSMS() {
-    $.ajax('./sms.txt').then(res => {
-        const data = res.split("\nSpr.:5099999\n\n").map(item => {
-            return item = {
-                address: 'MTBANK',
-                body: item
+    if (SMS) {
+        SMS.listSMS({
+            'maxCount': 7,
+            'address': 'MTBANK'
+        }, function (data) {
+            if (Array.isArray(data)) {
+                smsList = getParseData(data);
+                data = smsList.map((item) => {
+                    return {
+                        oplata: item.oplata,
+                        place: item.place.trim(),
+                        color: item.color
+                    }
+                });
+                let ctx = $("#doughnutChart");
+                MoneyStatistic.createChart({
+                    ctx: ctx,
+                    type: 'doughnut',
+                    data: data
+                });
             }
         });
-        if (Array.isArray(data)) {
-            smsList = getParseData(data);
-            let prices = smsList.map(function (item) {
-                return parseFloat(item.oplata);
+    } else {
+        $.ajax('./sms.txt').then(res => {
+            let data = res.split("\nSpr.:5099999\n\n").map(item => {
+                return {
+                    address: 'MTBANK',
+                    body: item
+                }
             });
-            let places = smsList.map(function (item) {
-                return item.place;
-            });
-
-            let colors = smsList.map(function (item) {
-                return item.color;
-            });
-            let ctx = $("#doughnutChart");
-            MoneyStatistic.createChart({
-                ctx: ctx,
-                type: 'doughnut',
-                data: prices,
-                labels: places,
-                colors: colors
-            });
-        }
-    });
-    if (SMS) {
-        // SMS.listSMS({
-        //     'maxCount': 7,
-        //     'address': 'MTBANK'
-        // }, function (data) {
-        //     if (Array.isArray(data)) {
-        //         smsList = getParseData(data);
-        //         var prices = smsList.map(function (item) {
-        //             return parseFloat(item.oplata);
-        //         });
-        //         var places = smsList.map(function (item) {
-        //             return item.place;
-        //         });
-        //         var ctx = $("#doughnutChart");
-        //         MoneyStatistic.createChart({
-        //             ctx: ctx,
-        //             type: 'doughnut',
-        //             data: prices,
-        //             labels: places
-        //         });
-        //     }
-        // });
+            if (Array.isArray(data)) {
+                smsList = getParseData(data);
+                data = smsList.map((item) => {
+                    return {
+                        oplata: item.oplata,
+                        place: item.place.trim(),
+                        color: item.color
+                    }
+                });
+                let ctx = $("#doughnutChart");
+                MoneyStatistic.createChart({
+                    ctx: ctx,
+                    type: 'doughnut',
+                    data: data
+                });
+            }
+        });
     }
 }
 
