@@ -21,12 +21,17 @@ function initApp() {
     });
 }
 
-function listSMS(count = 5, address = 'MTBANK') {
+function listSMS(config) {
+    config = Object.assign({
+        count: 5,
+        address: 'MTBANK',
+        chartType: 'doughnut'
+    }, config);
     MoneyStatistic.destroyChart();
     if (SMS) {
         SMS.listSMS({
-            'maxCount': count,
-            'address': address
+            'maxCount': config.count,
+            'address': config.address
         }, function (data) {
             if (Array.isArray(data)) {
                 smsList = getParseData(data);
@@ -40,7 +45,7 @@ function listSMS(count = 5, address = 'MTBANK') {
                 let ctx = $("#doughnutChart");
                 MoneyStatistic.createChart({
                     ctx: ctx,
-                    type: 'doughnut',
+                    type: config.chartType,
                     data: data
                 });
             }
@@ -49,7 +54,7 @@ function listSMS(count = 5, address = 'MTBANK') {
         $.ajax('./sms.txt').then(res => {
             let data = res.split("\nSpr.:5099999\n\n").map(item => {
                 return {
-                    address: 'MTBANK',
+                    address: config.address,
                     body: item
                 }
             });
@@ -65,7 +70,7 @@ function listSMS(count = 5, address = 'MTBANK') {
                 let ctx = $("#doughnutChart");
                 MoneyStatistic.createChart({
                     ctx: ctx,
-                    type: 'doughnut',
+                    type: config.chartType,
                     data: data
                 });
             }
@@ -75,7 +80,11 @@ function listSMS(count = 5, address = 'MTBANK') {
 
 $('#form').on('submit', function (event) {
     event.preventDefault();
-    listSMS(parseInt($('#smsCount').val()));
+    let $form = $(this);
+    listSMS({
+        count: parseInt($form.find('#smsCount').val()),
+        chartType: $form.find('#chartType').val()
+    })
 });
 
 function getParseData(data) {
@@ -103,10 +112,6 @@ function getParseData(data) {
 function getMoney(body) {
     return body.match(/(\d+\.\d+)\s(\S+)/ig);
 }
-
-setTimeout(function () {
-    listSMS();
-}, 2000);
 
 function getRandomColor() {
     let letters = '0123456789ABCDEF'.split('');
