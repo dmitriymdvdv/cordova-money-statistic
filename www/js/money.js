@@ -21,11 +21,12 @@ function initApp() {
     });
 }
 
-function listSMS() {
+function listSMS(count = 5, address = 'MTBANK') {
+    MoneyStatistic.destroyChart();
     if (SMS) {
         SMS.listSMS({
-            'maxCount': 7,
-            'address': 'MTBANK'
+            'maxCount': count,
+            'address': address
         }, function (data) {
             if (Array.isArray(data)) {
                 smsList = getParseData(data);
@@ -71,6 +72,11 @@ function listSMS() {
         });
     }
 }
+
+$('#form').on('submit', function (event) {
+    event.preventDefault();
+    listSMS(parseInt($('#smsCount').val()));
+});
 
 function getParseData(data) {
     var smsList = [];

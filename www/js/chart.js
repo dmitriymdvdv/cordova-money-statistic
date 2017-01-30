@@ -1,4 +1,6 @@
 ;(function ($) {
+    let chart;
+
     $(document).ready(function () {
         window.MoneyStatistic = Object.assign({
             createChart: function (config) {
@@ -25,7 +27,7 @@
                         'color': colors[i]
                     });
                 }
-                new Chart(ctx, {
+                chart = new Chart(ctx, {
                     type: type,
                     data: {
                         labels: labels,
@@ -40,6 +42,11 @@
                         maintainAspectRatio: false
                     }
                 });
+            },
+            destroyChart: function () {
+                if (chart) {
+                    chart.destroy();
+                }
             }
         }, window.MoneyStatistic);
     })
