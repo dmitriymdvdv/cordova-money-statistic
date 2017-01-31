@@ -6,6 +6,7 @@
             chart.destroy();
         }
     }
+
     function groupDataByPlace(data) {
         let paymentAmounts = [];
         let places = [];
@@ -39,7 +40,6 @@
     function getArray(field, arrayOfObjects) {
         return arrayOfObjects.map(item => item[field]);
     }
-
 
     $(document).ready(function () {
         window.MoneyStatistic = Object.assign({
